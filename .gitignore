@@ -4,6 +4,7 @@
 # But not these files...
 !.gitignore
 !plugin_inspectdb*
+!plugin_inspectdb/*
 
 # ...even if they are in subdirectories
 !*/
