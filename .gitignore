@@ -7,3 +7,5 @@
 
 # ...even if they are in subdirectories
 !*/
+
+*.pyc
