@@ -2,18 +2,12 @@
 
 def _plugin_inspectdb():
 
-    from plugin_inspectdb import InspectDB
+    from plugin_inspectdb import InspectDB, loopOconns
     from gluon.tools import PluginManager
     plugins = PluginManager('inspectdb', confkey="inspectdb:")
 
-    def _loopOconns():
-        """ Loops over configured db connections """
-        for k in filter(lambda c: c.startswith(plugins.inspectdb.confkey), myconf):
-            yield k[len(plugins.inspectdb.confkey):], \
-                {key: myconf.get(".".join((k, key,))) for key in myconf.take(k)}
-
     odbs = {name: DAL(nfo["uri"], pool_size=nfo["pool_size"], migrate=nfo["migrate"], check_reserved=['all']) \
-        for name, nfo in _loopOconns()}
+        for name, nfo in loopOconns(myconf, plugins.inspectdb.confkey)}
 
     for k, odb in odbs.iteritems():
         odbInspector = InspectDB(odb)

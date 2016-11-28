@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 from gluon import *
 
+def loopOconns(myconf, confkey):
+    """ Loops over configured db connections """
+    for k in filter(lambda c: c.startswith(confkey), myconf):
+        yield k[len(confkey):], \
+            {key: myconf.get(".".join((k, key,))) for key in myconf.take(k)}
+
 class InspectDB(object):
 
     sql = {
