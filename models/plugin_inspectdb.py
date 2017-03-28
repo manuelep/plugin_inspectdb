@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import json
+import json, dateutil
+plugin_inspectdb_tables_access = db(db.auth_permission.name=="plugin_inspectdb_access").count()>0 and \
+    auth.has_permission(name='plugin_inspectdb_access', table_name="all")
 
 def _plugin_inspectdb():
 
@@ -30,12 +32,13 @@ def _plugin_inspectdb():
             if any([(f.type=="id") for f in fields]):
                 odbs[k].define_table(tablename, *fields, **tabconf)
 
-        if plugin_inspectdb_tables_access:
-            response.menu += [
-                (STRONG(SPAN(_class="glyphicon glyphicon-sunglasses", **{"_aria-hidden": "true"}), " ", T("Inspect dbs"), _style="color: yellow;"), False, "#", [
-                    (conn, False, URL("plugin_inspectdb", "index", args=(conn,)),) \
-                for conn in odbs],),
-            ]
+    if plugin_inspectdb_tables_access:
+
+        response.menu += [
+            (STRONG(SPAN(_class="glyphicon glyphicon-sunglasses", **{"_aria-hidden": "true"}), " ", T("Inspect dbs"), _style="color: yellow;"), False, "#", [
+                (conn, False, URL("plugin_inspectdb", "index", args=(conn,)),) \
+            for conn in odbs],),
+        ]
 
     return odbs
 
@@ -59,7 +62,7 @@ class DBService(object):
         elif f.type == 'double':
             return float(v)
         elif f.type == 'date':
-            return  dateutil.parser.parse(v).date()
+            return dateutil.parser.parse(v).date()
         elif f.type == 'datetime':
             return dateutil.parser.parse(v)
         elif f.type == 'json':
@@ -70,7 +73,7 @@ class DBService(object):
     @classmethod
     def insert(cls, dbname, tablename, **kw):
         """ """
-        @auth.requires_login()
+        @auth.requires(request.is_local or auth.is_logged_in(), requires_login=False)
         def _main():
             tab = odbs[dbname][tablename]
             return tab.insert(**{k: cls._cast(tab[k], v) for k,v in kw.iteritems()})
@@ -82,7 +85,7 @@ class DBService(object):
         data @list : list of dictionaries
         """
         data = json.loads(_data)
-        @auth.requires_login()
+        @auth.requires(request.is_local or auth.is_logged_in(), requires_login=False)
         def _main():
             return odbs[dbname][tablename].bulk_insert(map(lambda kw: {k: cls._cast(tab[k], v) for k,v in kw.iteritems()}, data))
         return _main()
