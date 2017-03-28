@@ -30,6 +30,13 @@ def _plugin_inspectdb():
             if any([(f.type=="id") for f in fields]):
                 odbs[k].define_table(tablename, *fields, **tabconf)
 
+        if plugin_inspectdb_tables_access:
+            response.menu += [
+                (STRONG(SPAN(_class="glyphicon glyphicon-sunglasses", **{"_aria-hidden": "true"}), " ", T("Inspect dbs"), _style="color: yellow;"), False, "#", [
+                    (conn, False, URL("plugin_inspectdb", "index", args=(conn,)),) \
+                for conn in odbs],),
+            ]
+
     return odbs
 
 odbs = _plugin_inspectdb()
@@ -89,12 +96,3 @@ def db_insert(dbname, tablename, **kw):
 def db_bulk_insert(dbname, tablename, data):
     """ """
     return dict(ids = DBService.bulk_insert(dbname, tablename, data))
-
-if db(db.auth_permission.name=="plugin_inspectdb_access").count()>0 and \
-    auth.has_permission(name='plugin_inspectdb_access', table_name="all"):
-
-    response.menu += [
-        (STRONG(SPAN(_class="glyphicon glyphicon-sunglasses", **{"_aria-hidden": "true"}), " ", T("Inspect dbs"), _style="color: yellow;"), False, "#", [
-            (conn, False, URL("plugin_inspectdb", "index", args=(conn,)),) \
-        for conn in odbs],),
-    ]
