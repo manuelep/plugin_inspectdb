@@ -90,8 +90,11 @@ def db_bulk_insert(dbname, tablename, data):
     """ """
     return dict(ids = DBService.bulk_insert(dbname, tablename, data))
 
-response.menu += [
-    (STRONG(SPAN(_class="glyphicon glyphicon-sunglasses", **{"_aria-hidden": "true"}), " ", T("Inspect dbs"), _style="color: yellow;"), False, "#", [
-        (conn, False, URL("plugin_inspectdb", "index", args=(conn,)),) \
-    for conn in odbs],),
-]
+if db(db.auth_permission.name=="plugin_inspectdb_access").count()>0 and \
+    auth.has_permission(name='plugin_inspectdb_access', table_name="all"):
+
+    response.menu += [
+        (STRONG(SPAN(_class="glyphicon glyphicon-sunglasses", **{"_aria-hidden": "true"}), " ", T("Inspect dbs"), _style="color: yellow;"), False, "#", [
+            (conn, False, URL("plugin_inspectdb", "index", args=(conn,)),) \
+        for conn in odbs],),
+    ]
